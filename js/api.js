@@ -1,7 +1,7 @@
 const API = {
   async request(action, params = {}) {
-    if (CONFIG.API_URL === 'TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI') {
-      throw new Error('Configura la URL de Google Apps Script en js/config.js');
+    if (!CONFIG.API_URL || CONFIG.API_URL.includes('TU_URL')) {
+      throw new Error('URL del backend no configurada. Recarga la página (Ctrl+Shift+R).');
     }
 
     const url = new URL(CONFIG.API_URL);
