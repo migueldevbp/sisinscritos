@@ -34,19 +34,20 @@ function doPost(e) {
 }
 
 function handleRequest(e) {
-  const action = (e.parameter.action || '').toLowerCase();
+  const params = (e && e.parameter) ? e.parameter : {};
+  const action = (params.action || '').toLowerCase();
 
   try {
     let result;
     switch (action) {
       case 'login':
-        result = actionLogin(e.parameter.user, e.parameter.pass);
+        result = actionLogin(params.user, params.pass);
         break;
       case 'list':
         result = actionList();
         break;
       case 'add':
-        result = actionAdd(e.parameter.data);
+        result = actionAdd(params.data);
         break;
       case 'stats':
         result = actionStats();
@@ -58,6 +59,18 @@ function handleRequest(e) {
   } catch (err) {
     return jsonResponse({ success: false, error: err.message });
   }
+}
+
+/**
+ * Ejecuta esta función desde el editor (▶) para crear la hoja y verificar permisos.
+ * NO uses doGet con Ejecutar — doGet solo funciona desplegado como Web App.
+ */
+function testSetup() {
+  const sheet = getSheet();
+  const result = actionList();
+  Logger.log('Hoja creada: ' + sheet.getName());
+  Logger.log('Inscritos: ' + result.stats.total);
+  return result;
 }
 
 function jsonResponse(data) {
