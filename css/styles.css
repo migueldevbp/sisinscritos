@@ -674,20 +674,70 @@ tbody tr:hover { background: #f8fafc; }
 
 /* ── Print ── */
 @media print {
-  body * { visibility: hidden; }
-  .modal:not(.hidden) { display: block !important; position: static; }
-  .modal:not(.hidden) .modal-overlay,
-  .modal:not(.hidden) .no-print { display: none !important; }
-  .modal:not(.hidden) .modal-content {
-    visibility: visible;
-    position: static;
-    box-shadow: none;
-    max-width: 100%;
-    border: none;
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
   }
-  .modal:not(.hidden) .modal-content,
-  .modal:not(.hidden) .modal-content * { visibility: visible; }
-  .recibo { border: 2px solid #000; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  /* Ocultar todo excepto el modal abierto (display:none no ocupa espacio) */
+  #login-screen,
+  #app-screen,
+  #toast-container,
+  #loading,
+  .modal-overlay,
+  .no-print {
+    display: none !important;
+  }
+
+  .modal.hidden {
+    display: none !important;
+  }
+
+  .modal:not(.hidden) {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+  }
+
+  .modal:not(.hidden) .modal-content {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .modal:not(.hidden) .modal-body {
+    padding: 0 !important;
+  }
+
+  .recibo {
+    border: 2px solid #000 !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .recibo-header {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }
 
 /* ── Responsive ── */
