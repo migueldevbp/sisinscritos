@@ -14,7 +14,7 @@
 const SPREADSHEET_ID = '1ksOyZlplM5NwluCq1lloJUAmMCve_jnuvYuIu-8M8R4';
 const SHEET_NAME = 'Inscripciones';
 const EVENTO_COSTO = 50;
-const API_VERSION = '2.1';
+const API_VERSION = '2.2';
 
 const USUARIOS = {
   luigi:   'luigi2026',
@@ -94,8 +94,16 @@ function jsonResponse(data, callback) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+function getSpreadsheet() {
+  // Script creado desde Extensiones > Apps Script en la hoja
+  const bound = SpreadsheetApp.getActiveSpreadsheet();
+  if (bound) return bound;
+  // Respaldo por ID (pegar desde la URL del Google Sheet)
+  return SpreadsheetApp.openById(SPREADSHEET_ID);
+}
+
 function getSheet() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ss = getSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
 
   if (!sheet) {
