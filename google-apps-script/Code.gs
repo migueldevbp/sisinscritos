@@ -14,6 +14,7 @@
 const SPREADSHEET_ID = '1ksOyZlplM5NwluCq1lloJUAmMCve_jnuvYuIu-8M8R4';
 const SHEET_NAME = 'Inscripciones';
 const EVENTO_COSTO = 50;
+const API_VERSION = '2.1';
 
 const USUARIOS = {
   luigi:   'luigi2026',
@@ -52,6 +53,9 @@ function handleRequest(e) {
         break;
       case 'complete':
         result = actionComplete(params.id);
+        break;
+      case 'version':
+        result = { success: true, version: API_VERSION, features: ['list', 'add', 'complete'] };
         break;
       case 'stats':
         result = actionStats();
