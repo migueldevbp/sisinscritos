@@ -16,7 +16,13 @@ const API = {
 
     try {
       return await this.fetchJson(action, params);
-    } catch {
+    } catch (err) {
+      const msg = err.message || '';
+      const isNetwork = err instanceof TypeError ||
+        msg.includes('Failed to fetch') ||
+        msg === 'PERMISO' ||
+        msg.includes('Respuesta inválida');
+      if (!isNetwork) throw err;
       return await this.jsonp(action, params);
     }
   },
@@ -65,8 +71,8 @@ const API = {
       script.onerror = () => {
         cleanup();
         reject(new Error(
-          'No se pudo conectar con Google Sheets. ' +
-          'En Apps Script cambia "Solo yo" por "Cualquier persona" y crea Nueva versión.'
+          'Actualiza el código en Apps Script y crea Nueva versión. ' +
+          'Copia google-apps-script/Code.gs completo e Implementar de nuevo.'
         ));
       };
       document.head.appendChild(script);
