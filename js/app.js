@@ -34,8 +34,8 @@ const App = {
       this.handleInscripcion();
     });
 
-    document.getElementById('monto').addEventListener('input', () => this.updateSaldoPreview());
-    document.getElementById('estado').addEventListener('change', () => this.syncEstadoMonto());
+    document.getElementById('monto').addEventListener('change', () => this.updateSaldoPreview());
+    document.getElementById('estado').addEventListener('change', () => this.updateSaldoPreview());
 
     document.getElementById('btn-refresh').addEventListener('click', () => this.loadData(true));
     document.getElementById('btn-resumen').addEventListener('click', () => this.showResumen());
@@ -99,30 +99,22 @@ const App = {
   closeForm() {
     document.getElementById('form-section').classList.add('hidden');
     document.getElementById('inscripcion-form').reset();
-    document.getElementById('monto').value = '50';
+    document.getElementById('monto').value = '';
     document.getElementById('estado').value = 'cancelado';
     this.updateSaldoPreview();
   },
 
-  syncEstadoMonto() {
-    const estado = document.getElementById('estado').value;
-    const montoInput = document.getElementById('monto');
-    if (estado === 'cancelado') {
-      montoInput.value = CONFIG.EVENTO.costo;
-      montoInput.max = CONFIG.EVENTO.costo;
-    } else {
-      if (parseFloat(montoInput.value) >= CONFIG.EVENTO.costo) {
-        montoInput.value = (CONFIG.EVENTO.costo / 2).toFixed(2);
-      }
-      montoInput.max = CONFIG.EVENTO.costo - 0.5;
-    }
-    this.updateSaldoPreview();
-  },
-
   updateSaldoPreview() {
-    const monto = parseFloat(document.getElementById('monto').value) || 0;
-    const saldo = Math.max(0, CONFIG.EVENTO.costo - monto);
+    const montoVal = document.getElementById('monto').value;
     const el = document.getElementById('saldo-preview');
+
+    if (!montoVal) {
+      el.innerHTML = 'Seleccione el monto pagado';
+      return;
+    }
+
+    const monto = parseFloat(montoVal);
+    const saldo = Math.max(0, CONFIG.EVENTO.costo - monto);
     el.innerHTML = saldo > 0
       ? `Saldo pendiente: <strong>${Receipt.formatMoney(saldo)}</strong>`
       : `<strong style="color:#16a34a">✓ Pago completo — sin saldo pendiente</strong>`;
@@ -133,7 +125,7 @@ const App = {
     const apellidos = document.getElementById('apellidos').value.trim();
     const dni = document.getElementById('dni').value.trim();
     const telefono = document.getElementById('telefono').value.trim();
-    const monto = parseFloat(document.getElementById('monto').value);
+    const montoVal = document.getElementById('monto').value;
     const estado = document.getElementById('estado').value;
 
     if (!/^\d{8}$/.test(dni)) {
@@ -144,16 +136,17 @@ const App = {
       this.toast('El teléfono debe tener 9 dígitos', 'error');
       return;
     }
-    if (monto <= 0 || monto > CONFIG.EVENTO.costo) {
-      this.toast(`El monto debe estar entre S/ 0.01 y S/ ${CONFIG.EVENTO.costo}`, 'error');
+    if (!montoVal) {
+      this.toast('Seleccione el monto pagado', 'error');
       return;
     }
+    const monto = parseFloat(montoVal);
     if (estado === 'cancelado' && monto < CONFIG.EVENTO.costo) {
-      this.toast('Para estado "Cancelado" el monto debe ser S/ 50.00', 'error');
+      this.toast('Para estado "Cancelado" seleccione S/ 50.00', 'error');
       return;
     }
     if (estado === 'adelantado' && monto >= CONFIG.EVENTO.costo) {
-      this.toast('Para estado "Adelantado" el monto debe ser menor a S/ 50.00', 'error');
+      this.toast('Para estado "Adelantado" seleccione un monto menor a S/ 50.00', 'error');
       return;
     }
 

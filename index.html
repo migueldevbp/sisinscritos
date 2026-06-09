@@ -144,8 +144,15 @@
             <div class="form-row">
               <div class="form-group">
                 <label for="monto">Monto pagado (S/) *</label>
-                <input type="number" id="monto" required min="0" max="50" step="0.50" value="50">
-                <small class="hint">Costo del evento: S/ 50.00</small>
+                <select id="monto" required>
+                  <option value="">Seleccione monto</option>
+                  <option value="10">S/ 10.00</option>
+                  <option value="20">S/ 20.00</option>
+                  <option value="30">S/ 30.00</option>
+                  <option value="40">S/ 40.00</option>
+                  <option value="50">S/ 50.00</option>
+                </select>
+                <small class="hint">Costo del evento: S/ 50.00 — opciones de S/ 10 a S/ 50</small>
               </div>
               <div class="form-group">
                 <label for="estado">Estado de pago *</label>
@@ -156,7 +163,7 @@
               </div>
             </div>
             <div class="saldo-preview" id="saldo-preview">
-              Saldo pendiente: <strong>S/ 0.00</strong>
+              Seleccione el monto pagado
             </div>
             <div class="form-actions">
               <button type="button" id="btn-cancel-form" class="btn btn-ghost">Cancelar</button>
@@ -245,10 +252,10 @@
   <script>
     window.STARTEC_API_URL = 'https://script.google.com/macros/s/AKfycbxeX90JhEl8thARsdoaql0-UzERJ_0ZdB2MBmMubeQyb-KPtKl6v-2CmkUPf3WJgdSobw/exec';
   </script>
-  <script src="js/config.js?v=5"></script>
-  <script src="js/api.js?v=5"></script>
-  <script src="js/auth.js?v=5"></script>
-  <script src="js/receipt.js?v=5"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/config.js?v=6"></script>
+  <script src="js/api.js?v=6"></script>
+  <script src="js/auth.js?v=6"></script>
+  <script src="js/receipt.js?v=6"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>
