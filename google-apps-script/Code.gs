@@ -11,6 +11,7 @@
  * 5. Copia la URL generada y pégala en js/config.js
  */
 
+const SPREADSHEET_ID = '1ksOyZlplM5NwluCq1lloJUAmMCve_jnuvYuIu-8M8R4';
 const SHEET_NAME = 'Inscripciones';
 const EVENTO_COSTO = 50;
 
@@ -87,11 +88,14 @@ function jsonResponse(data, callback) {
 }
 
 function getSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet = ss.getSheetByName(SHEET_NAME);
 
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
+  }
+
+  if (sheet.getLastRow() === 0) {
     sheet.appendRow(HEADERS);
     sheet.getRange(1, 1, 1, HEADERS.length)
       .setFontWeight('bold')
