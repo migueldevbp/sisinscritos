@@ -134,11 +134,11 @@ Si ves eso, ¡el backend está listo! ✅
 1. Entra a **https://github.com** e inicia sesión.
 2. Clic en **+** (arriba derecha) → **New repository**
 3. Configura:
-   - **Repository name:** `startec-inscripciones` (o el nombre que prefieras)
+   - **Repository name:** `sisinscritos` ✅ (ya creado)
    - **Public** ✅
    - NO marques "Add a README" (ya tienes archivos locales)
 4. Clic en **Create repository**
-5. Copia la URL del repo, ej: `https://github.com/TU_USUARIO/startec-inscripciones.git`
+5. Tu repositorio ya está creado: `https://github.com/migueldevbp/sisinscritos`
 
 ---
 
@@ -153,11 +153,11 @@ git init
 git add .
 git commit -m "Sistema de inscripciones STARTEC 2026"
 git branch -M main
-git remote add origin https://github.com/TU_USUARIO/startec-inscripciones.git
+git remote add origin https://github.com/migueldevbp/sisinscritos.git
 git push -u origin main
 ```
 
-> Reemplaza `TU_USUARIO` y el nombre del repo con los tuyos.
+> ✅ Este paso ya está hecho — el código ya está subido.
 
 Te pedirá usuario y contraseña de GitHub (o token de acceso personal).
 
@@ -173,7 +173,7 @@ Te pedirá usuario y contraseña de GitHub (o token de acceso personal).
    - **Folder:** `/ (root)`
 5. Clic en **Save**.
 6. Espera 1–3 minutos. Recarga la página.
-7. Verás un enlace verde: `https://TU_USUARIO.github.io/startec-inscripciones/`
+7. Verás un enlace verde: **`https://migueldevbp.github.io/sisinscritos/`**
 
 ¡Esa es la URL pública de tu sistema! 🎉
 
