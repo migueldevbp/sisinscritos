@@ -208,8 +208,28 @@ const App = {
       `${stats.total} inscrito${stats.total !== 1 ? 's' : ''}`;
   },
 
+  renderInscritoActions(i) {
+    if (i.estado === 'cancelado') {
+      return `<button class="btn-recibo" data-id="${i.id}">🧾 Recibo</button>`;
+    }
+    return `<button class="btn-completar" data-id="${i.id}">✅ Completar pago</button>`;
+  },
+
+  bindActionButtons(container) {
+    container.querySelectorAll('.btn-recibo').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const inscrito = this.inscritos.find(i => String(i.id) === String(btn.dataset.id));
+        if (inscrito && inscrito.estado === 'cancelado') this.showRecibo(inscrito);
+      });
+    });
+    container.querySelectorAll('.btn-completar').forEach(btn => {
+      btn.addEventListener('click', () => this.completarPago(btn.dataset.id));
+    });
+  },
+
   renderTable() {
     const tbody = document.getElementById('inscritos-tbody');
+    const cardsEl = document.getElementById('inscritos-cards');
     const costo = CONFIG.EVENTO.costo;
 
     let filtered = this.inscritos;
@@ -225,10 +245,13 @@ const App = {
     document.getElementById('table-count').textContent =
       `${filtered.length} registro${filtered.length !== 1 ? 's' : ''}`;
 
+    const emptyMsg = this.searchQuery
+      ? 'No se encontraron resultados'
+      : 'No hay inscritos aún. ¡Registra al primero!';
+
     if (filtered.length === 0) {
-      tbody.innerHTML = `<tr class="empty-row"><td colspan="9">${
-        this.searchQuery ? 'No se encontraron resultados' : 'No hay inscritos aún. ¡Registra al primero!'
-      }</td></tr>`;
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="9">${emptyMsg}</td></tr>`;
+      cardsEl.innerHTML = `<div class="cards-empty">${emptyMsg}</div>`;
       return;
     }
 
@@ -237,13 +260,7 @@ const App = {
       const saldo = Math.max(0, costo - monto);
       const badgeClass = i.estado === 'cancelado' ? 'badge-cancelado' : 'badge-adelantado';
       const estadoLabel = i.estado === 'cancelado' ? 'Cancelado' : 'Adelantado';
-
-      let acciones;
-      if (i.estado === 'cancelado') {
-        acciones = `<button class="btn-recibo" data-id="${i.id}">🧾 Recibo</button>`;
-      } else {
-        acciones = `<button class="btn-completar" data-id="${i.id}">✅ Completar pago</button>`;
-      }
+      const acciones = this.renderInscritoActions(i);
 
       return `<tr>
         <td>${i.id || idx + 1}</td>
@@ -258,17 +275,32 @@ const App = {
       </tr>`;
     }).join('');
 
-    tbody.querySelectorAll('.btn-recibo').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.id;
-        const inscrito = this.inscritos.find(i => String(i.id) === String(id));
-        if (inscrito && inscrito.estado === 'cancelado') this.showRecibo(inscrito);
-      });
-    });
+    cardsEl.innerHTML = filtered.map((i, idx) => {
+      const monto = parseFloat(i.monto) || 0;
+      const saldo = Math.max(0, costo - monto);
+      const badgeClass = i.estado === 'cancelado' ? 'badge-cancelado' : 'badge-adelantado';
+      const estadoLabel = i.estado === 'cancelado' ? 'Cancelado' : 'Adelantado';
+      const acciones = this.renderInscritoActions(i);
 
-    tbody.querySelectorAll('.btn-completar').forEach(btn => {
-      btn.addEventListener('click', () => this.completarPago(btn.dataset.id));
-    });
+      return `<article class="inscrito-card">
+        <div class="card-header">
+          <span class="card-id">#${i.id || idx + 1}</span>
+          <span class="badge ${badgeClass}">${estadoLabel}</span>
+        </div>
+        <h4 class="card-name">${i.nombre} ${i.apellidos}</h4>
+        <dl class="card-details">
+          <div><dt>DNI</dt><dd>${i.dni}</dd></div>
+          <div><dt>Teléfono</dt><dd>${i.telefono}</dd></div>
+          <div><dt>Monto</dt><dd>${Receipt.formatMoney(monto)}</dd></div>
+          <div><dt>Saldo</dt><dd>${saldo > 0 ? Receipt.formatMoney(saldo) : '—'}</dd></div>
+          <div><dt>Registrado por</dt><dd style="text-transform:capitalize">${i.registradoPor || '—'}</dd></div>
+        </dl>
+        <div class="card-actions">${acciones}</div>
+      </article>`;
+    }).join('');
+
+    this.bindActionButtons(tbody);
+    this.bindActionButtons(cardsEl);
   },
 
   async completarPago(id) {

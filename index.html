@@ -2,9 +2,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a3a6b">
   <title>STARTEC 2026 — Inscripciones</title>
-  <link rel="stylesheet" href="css/styles.css?v=7">
+  <link rel="stylesheet" href="css/styles.css?v=8">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -181,7 +182,7 @@
           <h3>Lista de inscritos</h3>
           <span class="table-count" id="table-count">0 registros</span>
         </div>
-        <div class="table-wrapper">
+        <div class="table-wrapper desktop-only">
           <table id="inscritos-table">
             <thead>
               <tr>
@@ -203,6 +204,7 @@
             </tbody>
           </table>
         </div>
+        <div id="inscritos-cards" class="inscritos-cards mobile-only"></div>
       </section>
     </main>
   </div>
@@ -256,6 +258,6 @@
   <script src="js/api.js?v=8"></script>
   <script src="js/auth.js?v=7"></script>
   <script src="js/receipt.js?v=7"></script>
-  <script src="js/app.js?v=7"></script>
+  <script src="js/app.js?v=8"></script>
 </body>
 </html>
