@@ -238,6 +238,13 @@ const App = {
       const badgeClass = i.estado === 'cancelado' ? 'badge-cancelado' : 'badge-adelantado';
       const estadoLabel = i.estado === 'cancelado' ? 'Cancelado' : 'Adelantado';
 
+      let acciones;
+      if (i.estado === 'cancelado') {
+        acciones = `<button class="btn-recibo" data-id="${i.id}">🧾 Recibo</button>`;
+      } else {
+        acciones = `<button class="btn-completar" data-id="${i.id}">✅ Completar pago</button>`;
+      }
+
       return `<tr>
         <td>${i.id || idx + 1}</td>
         <td><strong>${i.nombre} ${i.apellidos}</strong></td>
@@ -247,7 +254,7 @@ const App = {
         <td><span class="badge ${badgeClass}">${estadoLabel}</span></td>
         <td>${saldo > 0 ? Receipt.formatMoney(saldo) : '—'}</td>
         <td style="text-transform:capitalize">${i.registradoPor || '—'}</td>
-        <td><button class="btn-recibo" data-id="${i.id}">🧾 Recibo</button></td>
+        <td class="td-acciones">${acciones}</td>
       </tr>`;
     }).join('');
 
@@ -255,12 +262,48 @@ const App = {
       btn.addEventListener('click', () => {
         const id = btn.dataset.id;
         const inscrito = this.inscritos.find(i => String(i.id) === String(id));
-        if (inscrito) this.showRecibo(inscrito);
+        if (inscrito && inscrito.estado === 'cancelado') this.showRecibo(inscrito);
       });
+    });
+
+    tbody.querySelectorAll('.btn-completar').forEach(btn => {
+      btn.addEventListener('click', () => this.completarPago(btn.dataset.id));
     });
   },
 
+  async completarPago(id) {
+    const inscrito = this.inscritos.find(i => String(i.id) === String(id));
+    if (!inscrito || inscrito.estado !== 'adelantado') return;
+
+    const monto = parseFloat(inscrito.monto) || 0;
+    const saldo = CONFIG.EVENTO.costo - monto;
+    const nombre = `${inscrito.nombre} ${inscrito.apellidos}`;
+
+    const ok = confirm(
+      `¿Confirmar pago completo de ${nombre}?\n\n` +
+      `Ya pagó: ${Receipt.formatMoney(monto)}\n` +
+      `Saldo restante: ${Receipt.formatMoney(saldo)}\n\n` +
+      `Se marcará como CANCELADO (S/ 50.00) y podrá generar el recibo.`
+    );
+    if (!ok) return;
+
+    this.setLoading(true);
+    try {
+      await API.completarPago(id);
+      this.toast(`${nombre} — pago completado. Ya puede generar el recibo.`, 'success');
+      await this.loadData();
+    } catch (err) {
+      this.toast(err.message, 'error');
+    } finally {
+      this.setLoading(false);
+    }
+  },
+
   showRecibo(inscrito) {
+    if (inscrito.estado !== 'cancelado') {
+      this.toast('El recibo solo está disponible cuando el pago está cancelado (completo)', 'warning');
+      return;
+    }
     document.getElementById('recibo-body').innerHTML = Receipt.generate(inscrito);
     document.getElementById('modal-recibo').classList.remove('hidden');
   },

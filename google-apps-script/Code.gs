@@ -50,6 +50,9 @@ function handleRequest(e) {
       case 'add':
         result = actionAdd(params.data);
         break;
+      case 'complete':
+        result = actionComplete(params.id);
+        break;
       case 'stats':
         result = actionStats();
         break;
@@ -223,4 +226,39 @@ function actionAdd(dataJson) {
 
   const allRows = existing.concat([newRow]);
   return { success: true, data: newRow, stats: calcStats(allRows) };
+}
+
+function actionComplete(id) {
+  if (!id) {
+    return { success: false, error: 'ID de inscripción requerido' };
+  }
+
+  const sheet = getSheet();
+  const data = sheet.getDataRange().getValues();
+  let rowIndex = -1;
+
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(id)) {
+      rowIndex = i + 1;
+      break;
+    }
+  }
+
+  if (rowIndex === -1) {
+    return { success: false, error: 'Inscripción no encontrada' };
+  }
+
+  const estadoActual = data[rowIndex - 1][7];
+  if (estadoActual !== 'adelantado') {
+    return { success: false, error: 'Esta inscripción ya está cancelada o no tiene adelanto' };
+  }
+
+  // Columnas: Monto=7, Estado=8, Saldo=9
+  sheet.getRange(rowIndex, 7).setValue(EVENTO_COSTO);
+  sheet.getRange(rowIndex, 8).setValue('cancelado');
+  sheet.getRange(rowIndex, 9).setValue(0);
+
+  const rows = getAllRows();
+  const updated = rows.find(r => String(r.id) === String(id));
+  return { success: true, data: updated, stats: calcStats(rows) };
 }

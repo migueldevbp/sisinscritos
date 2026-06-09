@@ -206,6 +206,27 @@ body {
 }
 .btn-recibo:hover { background: #bae6fd; }
 
+.btn-completar {
+  background: #dcfce7;
+  color: #15803d;
+  border: none;
+  padding: .35rem .7rem;
+  border-radius: 6px;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.btn-completar:hover { background: #bbf7d0; }
+
+.td-acciones {
+  white-space: nowrap;
+  display: flex;
+  gap: .35rem;
+  flex-wrap: wrap;
+}
+
 /* ── Header ── */
 .app-header {
   background: var(--primary);

@@ -85,6 +85,10 @@ const API = {
     return this.request('add', { data: inscripcion });
   },
 
+  completarPago(id) {
+    return this.request('complete', { id });
+  },
+
   stats() {
     return this.request('stats');
   }
