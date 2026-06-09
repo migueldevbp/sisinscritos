@@ -1,7 +1,7 @@
 const CONFIG = {
   // URL del Google Apps Script desplegado como Web App
   // Reemplaza con tu URL después de configurar Google Sheets (ver README.md)
-  API_URL: 'TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI',
+  API_URL: 'https://script.google.com/macros/s/AKfycbxeX90JhEl8thARsdoaql0-UzERJ_0ZdB2MBmMubeQyb-KPtKl6v-2CmkUPf3WJgdSobw/exec',
 
   EVENTO: {
     nombre: 'Ier Congreso Nacional de Investigación, Innovación y Emprendimiento STARTEC 2026',
