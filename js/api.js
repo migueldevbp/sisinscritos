@@ -1,26 +1,57 @@
 const API = {
-  request(action, params = {}) {
-    return new Promise((resolve, reject) => {
-      if (!CONFIG.API_URL || CONFIG.API_URL.includes('TU_URL')) {
-        reject(new Error('URL del backend no configurada. Recarga la página (Ctrl+Shift+R).'));
-        return;
-      }
+  buildUrl(action, params = {}, withCallback) {
+    const url = new URL(CONFIG.API_URL);
+    url.searchParams.set('action', action);
+    if (withCallback) url.searchParams.set('callback', withCallback);
+    Object.entries(params).forEach(([k, v]) => {
+      url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v);
+    });
+    return url.toString();
+  },
 
-      const callbackName = '_startec_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+  async request(action, params = {}) {
+    if (!CONFIG.API_URL || CONFIG.API_URL.includes('TU_URL')) {
+      throw new Error('URL del backend no configurada. Recarga la página (Ctrl+Shift+R).');
+    }
+
+    try {
+      return await this.fetchJson(action, params);
+    } catch {
+      return await this.jsonp(action, params);
+    }
+  },
+
+  async fetchJson(action, params) {
+    const res = await fetch(this.buildUrl(action, params), {
+      method: 'GET',
+      redirect: 'follow'
+    });
+    const text = await res.text();
+    if (text.includes('accounts.google.com') || text.includes('<!DOCTYPE')) {
+      throw new Error('PERMISO');
+    }
+    const data = JSON.parse(text);
+    if (!data.success) throw new Error(data.error || 'Error del servidor');
+    return data;
+  },
+
+  jsonp(action, params) {
+    return new Promise((resolve, reject) => {
+      const cb = '_st_' + Date.now();
       let script = null;
 
       const cleanup = () => {
         clearTimeout(timer);
-        delete window[callbackName];
+        delete window[cb];
         if (script && script.parentNode) script.parentNode.removeChild(script);
       };
 
       const timer = setTimeout(() => {
         cleanup();
-        reject(new Error('Tiempo de espera agotado. Verifica tu conexión.'));
+        reject(new Error('Tiempo de espera agotado. Verifica la conexión.'));
       }, 30000);
 
-      window[callbackName] = (data) => {
+      window[cb] = (data) => {
         cleanup();
         if (!data || !data.success) {
           reject(new Error((data && data.error) || 'Error del servidor'));
@@ -29,18 +60,14 @@ const API = {
         }
       };
 
-      const url = new URL(CONFIG.API_URL);
-      url.searchParams.set('action', action);
-      url.searchParams.set('callback', callbackName);
-      Object.entries(params).forEach(([k, v]) => {
-        url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v);
-      });
-
       script = document.createElement('script');
-      script.src = url.toString();
+      script.src = this.buildUrl(action, params, cb);
       script.onerror = () => {
         cleanup();
-        reject(new Error('No se pudo conectar con Google Sheets. Verifica que Apps Script tenga acceso "Cualquier persona".'));
+        reject(new Error(
+          'No se pudo conectar con Google Sheets. ' +
+          'En Apps Script cambia "Solo yo" por "Cualquier persona" y crea Nueva versión.'
+        ));
       };
       document.head.appendChild(script);
     });
