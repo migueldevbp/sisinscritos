@@ -55,9 +55,9 @@ function handleRequest(e) {
       default:
         result = { success: false, error: 'Acción no válida: ' + action };
     }
-    return jsonResponse(result);
+    return jsonResponse(result, params.callback);
   } catch (err) {
-    return jsonResponse({ success: false, error: err.message });
+    return jsonResponse({ success: false, error: err.message }, params.callback);
   }
 }
 
@@ -73,9 +73,16 @@ function testSetup() {
   return result;
 }
 
-function jsonResponse(data) {
+function jsonResponse(data, callback) {
+  const json = JSON.stringify(data);
+  if (callback) {
+    const safeCallback = String(callback).replace(/[^a-zA-Z0-9_$.]/g, '');
+    return ContentService
+      .createTextOutput(safeCallback + '(' + json + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService
-    .createTextOutput(JSON.stringify(data))
+    .createTextOutput(json)
     .setMimeType(ContentService.MimeType.JSON);
 }
 

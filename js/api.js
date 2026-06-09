@@ -1,29 +1,49 @@
 const API = {
-  async request(action, params = {}) {
-    if (!CONFIG.API_URL || CONFIG.API_URL.includes('TU_URL')) {
-      throw new Error('URL del backend no configurada. Recarga la página (Ctrl+Shift+R).');
-    }
+  request(action, params = {}) {
+    return new Promise((resolve, reject) => {
+      if (!CONFIG.API_URL || CONFIG.API_URL.includes('TU_URL')) {
+        reject(new Error('URL del backend no configurada. Recarga la página (Ctrl+Shift+R).'));
+        return;
+      }
 
-    const url = new URL(CONFIG.API_URL);
-    url.searchParams.set('action', action);
-    Object.entries(params).forEach(([k, v]) => {
-      url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v);
+      const callbackName = '_startec_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      let script = null;
+
+      const cleanup = () => {
+        clearTimeout(timer);
+        delete window[callbackName];
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      };
+
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error('Tiempo de espera agotado. Verifica tu conexión.'));
+      }, 30000);
+
+      window[callbackName] = (data) => {
+        cleanup();
+        if (!data || !data.success) {
+          reject(new Error((data && data.error) || 'Error del servidor'));
+        } else {
+          resolve(data);
+        }
+      };
+
+      const url = new URL(CONFIG.API_URL);
+      url.searchParams.set('action', action);
+      url.searchParams.set('callback', callbackName);
+      Object.entries(params).forEach(([k, v]) => {
+        url.searchParams.set(k, typeof v === 'object' ? JSON.stringify(v) : v);
+      });
+
+      script = document.createElement('script');
+      script.src = url.toString();
+      script.onerror = () => {
+        cleanup();
+        reject(new Error('No se pudo conectar con Google Sheets. Verifica que Apps Script tenga acceso "Cualquier persona".'));
+      };
+      document.head.appendChild(script);
     });
-
-    const res = await fetch(url.toString(), { method: 'GET', redirect: 'follow' });
-    const text = await res.text();
-
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error('Respuesta inválida del servidor. Verifica la URL de Apps Script.');
-    }
-
-    if (!data.success) {
-      throw new Error(data.error || 'Error desconocido del servidor');
-    }
-    return data;
   },
 
   login(user, pass) {
