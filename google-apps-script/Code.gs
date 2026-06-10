@@ -14,7 +14,8 @@
 const SPREADSHEET_ID = '1ksOyZlplM5NwluCq1lloJUAmMCve_jnuvYuIu-8M8R4';
 const SHEET_NAME = 'Inscripciones';
 const EVENTO_COSTO = 50;
-const API_VERSION = '2.2';
+const EVENTO_COSTO_ESTUDIANTE = 25;
+const API_VERSION = '2.3';
 
 const USUARIOS = {
   luigi:   'luigi2026',
@@ -163,7 +164,7 @@ function calcStats(rows) {
   return {
     total: rows.length,
     ingresos: rows.reduce((s, r) => s + r.monto, 0),
-    cancelados: rows.filter(r => r.estado === 'cancelado').length,
+    cancelados: rows.filter(r => r.estado === 'cancelado' || r.estado === 'estudiante').length,
     adelantados: rows.filter(r => r.estado === 'adelantado').length
   };
 }
@@ -203,7 +204,15 @@ function actionAdd(dataJson) {
   }
 
   const montoNum = parseFloat(monto);
-  const saldo = Math.max(0, EVENTO_COSTO - montoNum);
+
+  if (estado === 'estudiante' && montoNum !== EVENTO_COSTO_ESTUDIANTE) {
+    return { success: false, error: 'Tarifa estudiante IESPASCO debe ser S/ 25.00' };
+  }
+  if (montoNum === EVENTO_COSTO_ESTUDIANTE && estado !== 'estudiante') {
+    return { success: false, error: 'S/ 25.00 corresponde a tarifa ESTUDIANTE - IESPASCO' };
+  }
+
+  const saldo = estado === 'estudiante' ? 0 : Math.max(0, EVENTO_COSTO - montoNum);
   const lastId = existing.length > 0
     ? Math.max(...existing.map(r => Number(r.id) || 0))
     : 0;

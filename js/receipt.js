@@ -16,7 +16,9 @@ const Receipt = {
     const costo = CONFIG.EVENTO.costo;
     const monto = parseFloat(inscrito.monto) || 0;
     const saldo = Math.max(0, costo - monto);
-    const estadoLabel = inscrito.estado === 'cancelado' ? 'PAGO COMPLETO' : 'PAGO ADELANTADO';
+    let estadoLabel = 'PAGO ADELANTADO';
+    if (inscrito.estado === 'estudiante') estadoLabel = 'ESTUDIANTE - IESPASCO';
+    else if (inscrito.estado === 'cancelado') estadoLabel = 'PAGO COMPLETO';
 
     return `
       <div class="recibo" id="recibo-print">

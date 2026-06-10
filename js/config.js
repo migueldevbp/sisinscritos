@@ -6,6 +6,7 @@ const CONFIG = {
     institucion: 'Instituto de Educación Superior Tecnológico Público Pasco',
     siglas: 'IESPASCO',
     costo: 50.00,
+    costoEstudiante: 25.00,
     moneda: 'PEN'
   },
 

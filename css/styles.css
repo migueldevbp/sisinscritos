@@ -485,6 +485,12 @@ tbody tr:hover { background: #f8fafc; }
 
 .badge-cancelado { background: #dcfce7; color: #15803d; }
 .badge-adelantado { background: #fef9c3; color: #a16207; }
+.badge-estudiante {
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: .65rem;
+  letter-spacing: .02em;
+}
 
 /* ── Mobile cards (lista de inscritos) ── */
 .inscritos-cards {

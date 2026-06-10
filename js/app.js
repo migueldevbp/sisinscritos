@@ -3,6 +3,20 @@ const App = {
   pollTimer: null,
   searchQuery: '',
 
+  getEstadoInfo(estado) {
+    if (estado === 'estudiante') {
+      return { badge: 'badge-estudiante', label: 'ESTUDIANTE - IESPASCO' };
+    }
+    if (estado === 'cancelado') {
+      return { badge: 'badge-cancelado', label: 'Cancelado' };
+    }
+    return { badge: 'badge-adelantado', label: 'Adelantado' };
+  },
+
+  isPagoCompleto(estado) {
+    return estado === 'cancelado' || estado === 'estudiante';
+  },
+
   init() {
     this.bindEvents();
     if (Auth.isLoggedIn()) {
@@ -34,7 +48,7 @@ const App = {
       this.handleInscripcion();
     });
 
-    document.getElementById('monto').addEventListener('change', () => this.updateSaldoPreview());
+    document.getElementById('monto').addEventListener('change', () => this.syncMontoEstado());
     document.getElementById('estado').addEventListener('change', () => this.updateSaldoPreview());
 
     document.getElementById('btn-refresh').addEventListener('click', () => this.loadData(true));
@@ -101,15 +115,39 @@ const App = {
     document.getElementById('inscripcion-form').reset();
     document.getElementById('monto').value = '';
     document.getElementById('estado').value = 'cancelado';
+    document.getElementById('estado').disabled = false;
+    this.updateSaldoPreview();
+  },
+
+  syncMontoEstado() {
+    const montoVal = document.getElementById('monto').value;
+    const estadoEl = document.getElementById('estado');
+    const tarifaEst = String(CONFIG.EVENTO.costoEstudiante);
+
+    if (montoVal === tarifaEst) {
+      estadoEl.value = 'estudiante';
+      estadoEl.disabled = true;
+    } else {
+      estadoEl.disabled = false;
+      if (estadoEl.value === 'estudiante') {
+        estadoEl.value = montoVal === '50' ? 'cancelado' : 'adelantado';
+      }
+    }
     this.updateSaldoPreview();
   },
 
   updateSaldoPreview() {
     const montoVal = document.getElementById('monto').value;
+    const estado = document.getElementById('estado').value;
     const el = document.getElementById('saldo-preview');
 
     if (!montoVal) {
       el.innerHTML = 'Seleccione el monto pagado';
+      return;
+    }
+
+    if (estado === 'estudiante') {
+      el.innerHTML = `<strong style="color:#5b21b6">✓ Tarifa Estudiantes IESPASCO — ${Receipt.formatMoney(CONFIG.EVENTO.costoEstudiante)}</strong>`;
       return;
     }
 
@@ -141,6 +179,14 @@ const App = {
       return;
     }
     const monto = parseFloat(montoVal);
+    if (estado === 'estudiante' && monto !== CONFIG.EVENTO.costoEstudiante) {
+      this.toast('Tarifa estudiante IESPASCO es S/ 25.00', 'error');
+      return;
+    }
+    if (monto === CONFIG.EVENTO.costoEstudiante && estado !== 'estudiante') {
+      this.toast('S/ 25.00 corresponde a tarifa Estudiantes IESPASCO', 'error');
+      return;
+    }
     if (estado === 'cancelado' && monto < CONFIG.EVENTO.costo) {
       this.toast('Para estado "Cancelado" seleccione S/ 50.00', 'error');
       return;
@@ -195,7 +241,7 @@ const App = {
       stats = {
         total: this.inscritos.length,
         ingresos: this.inscritos.reduce((s, i) => s + (parseFloat(i.monto) || 0), 0),
-        cancelados: this.inscritos.filter(i => i.estado === 'cancelado').length,
+        cancelados: this.inscritos.filter(i => this.isPagoCompleto(i.estado)).length,
         adelantados: this.inscritos.filter(i => i.estado === 'adelantado').length
       };
     }
@@ -209,7 +255,7 @@ const App = {
   },
 
   renderInscritoActions(i) {
-    if (i.estado === 'cancelado') {
+    if (this.isPagoCompleto(i.estado)) {
       return `<button class="btn-recibo" data-id="${i.id}">🧾 Recibo</button>`;
     }
     return `<button class="btn-completar" data-id="${i.id}">✅ Completar pago</button>`;
@@ -219,7 +265,7 @@ const App = {
     container.querySelectorAll('.btn-recibo').forEach(btn => {
       btn.addEventListener('click', () => {
         const inscrito = this.inscritos.find(i => String(i.id) === String(btn.dataset.id));
-        if (inscrito && inscrito.estado === 'cancelado') this.showRecibo(inscrito);
+        if (inscrito && this.isPagoCompleto(inscrito.estado)) this.showRecibo(inscrito);
       });
     });
     container.querySelectorAll('.btn-completar').forEach(btn => {
@@ -257,9 +303,8 @@ const App = {
 
     tbody.innerHTML = filtered.map((i, idx) => {
       const monto = parseFloat(i.monto) || 0;
-      const saldo = Math.max(0, costo - monto);
-      const badgeClass = i.estado === 'cancelado' ? 'badge-cancelado' : 'badge-adelantado';
-      const estadoLabel = i.estado === 'cancelado' ? 'Cancelado' : 'Adelantado';
+      const saldo = i.estado === 'estudiante' ? 0 : Math.max(0, costo - monto);
+      const { badge: badgeClass, label: estadoLabel } = this.getEstadoInfo(i.estado);
       const acciones = this.renderInscritoActions(i);
 
       return `<tr>
@@ -277,9 +322,8 @@ const App = {
 
     cardsEl.innerHTML = filtered.map((i, idx) => {
       const monto = parseFloat(i.monto) || 0;
-      const saldo = Math.max(0, costo - monto);
-      const badgeClass = i.estado === 'cancelado' ? 'badge-cancelado' : 'badge-adelantado';
-      const estadoLabel = i.estado === 'cancelado' ? 'Cancelado' : 'Adelantado';
+      const saldo = i.estado === 'estudiante' ? 0 : Math.max(0, costo - monto);
+      const { badge: badgeClass, label: estadoLabel } = this.getEstadoInfo(i.estado);
       const acciones = this.renderInscritoActions(i);
 
       return `<article class="inscrito-card">
@@ -332,8 +376,8 @@ const App = {
   },
 
   showRecibo(inscrito) {
-    if (inscrito.estado !== 'cancelado') {
-      this.toast('El recibo solo está disponible cuando el pago está cancelado (completo)', 'warning');
+    if (!this.isPagoCompleto(inscrito.estado)) {
+      this.toast('El recibo solo está disponible con pago completo', 'warning');
       return;
     }
     document.getElementById('recibo-body').innerHTML = Receipt.generate(inscrito);
@@ -345,7 +389,7 @@ const App = {
     const stats = {
       total: this.inscritos.length,
       ingresos: this.inscritos.reduce((s, i) => s + (parseFloat(i.monto) || 0), 0),
-      cancelados: this.inscritos.filter(i => i.estado === 'cancelado').length,
+      cancelados: this.inscritos.filter(i => this.isPagoCompleto(i.estado)).length,
       adelantados: this.inscritos.filter(i => i.estado === 'adelantado').length
     };
     document.getElementById('resumen-body').innerHTML =
