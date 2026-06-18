@@ -34,39 +34,6 @@ Permite inscribir participantes, registrar pagos (adelantado o cancelado), ver e
 8. Haz clic en **Implementar** y autoriza los permisos.
 9. **Copia la URL** que termina en `/exec` (no uses la que termina en `/dev`).
 
----
-
-## Paso 2: Configurar la web
-
-Abre `js/config.js` y reemplaza la URL:
-
-```js
-API_URL: 'https://script.google.com/macros/s/TU_ID_AQUI/exec',
-```
-
-### Contraseñas por defecto
-
-| Usuario  | Contraseña    |
-|----------|---------------|
-| luigi    | `luigi2026`   |
-| miguel   | `miguel2026`  |
-| marlene  | `marlene2026` |
-
-Para cambiarlas, edita `js/config.js` (frontend) y `google-apps-script/Code.gs` (backend), luego vuelve a desplegar el Apps Script.
-
----
-
-## Paso 3: Subir a GitHub Pages
-
-1. Crea un repositorio en GitHub (ej: `startec-inscripciones`).
-2. Sube todos los archivos del proyecto.
-3. Ve a **Settings → Pages**.
-4. En **Source**, selecciona la rama `main` y carpeta `/ (root)`.
-5. Guarda. En unos minutos tu web estará en:
-   `https://TU_USUARIO.github.io/startec-inscripciones/`
-
----
-
 ## Estructura del proyecto
 
 ```
